@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公告資訊</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        h5 {
+            text-align: center;
+            padding: 5px 0px;
+            margin: 2px;
+        }
+        .table {
+            width: 95%;
+        }
+        .ck-table-resized {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ck-table-resized td, .ck-table-resized th {
+            /*border: 1px solid #ddd;*/
+            padding: 12px 4px;
+        }
+        .ck-table-resized th {
+            background-color: #f2f2f2;
+        }
+        tbody tr:nth-child(5n) {
+            border-bottom: 1px solid #686060;
+        }
+        tr:hover {
+            background-color: rgb(176, 176, 181);
+        }
+        
+
+        /* 將.group元素置中 */
+        .group-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .group {
+            padding: 5px 10px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            line-height: 1;     
+        }
+        .group + .group {
+            margin-left: 2px; /* 在每个 .group 元素后添加 2px 的 margin 左侧分隔 */
+        }
+        /* 根據文字內容設置背景顏色 */
+        .group[data-content="實習組"] {
+            background-color: red;
+        }
+        .group[data-content="課程組"] {
+            background-color: blueviolet;
+        }
+        .group[data-content="師培中心"] {
+            background-color: yellowgreen;
+        }
+        .group[data-content="行政組"] {
+            background-color: blue;
+        }
+        .group[data-content="教甄"] {
+            background-color: orange;
+        }
+        .title {
+            text-align: left;
+        }
+        .dates {
+            text-align: center;
+        }
+
+        button{
+            margin: 5px 10px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight:bold;
+            text-align: center;
+            line-height: 1;   
+            box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+            border:None;
+            filter: saturate(75%); /* 初始飽和度 */
+            transition: filter 0.6s; /* 添加过渡效果 */
+            transition: transform 1s;
+        }
+        button:hover{
+            transform: scale(1.2);
+            filter: saturate(250%);
+        }
+        .button-container{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .function-container{
+            background-color: ivory;
+            display: block;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border:None;
+            padding: 5px 10px;
+            margin: 5px 20%;
+        }
+    </style>
+
+    <script>
+        const { exec } = require('child_process');
+        exec('python app.py', (err, stdout, stderr) => {
+            if (err) {
+                console.error(`Error: ${err.message}`);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+            console.error(`stderr: ${stderr}`);
+        });
+    </script>
+</head>
+<body style="background-color:rgb(217, 217, 223);">
+    <h1>公告資訊</h1>
+    <div class="function-container">
+        <h5>分類檢索</h5>
+        <div class="button-container">
+            <button onclick="filterData('實習組')" style="background-color: bisque;">實習組</button>
+            <button onclick="filterData('教甄')" style="background-color: mediumaquamarine;">教甄</button>
+            <button onclick="filterData('課程組')" style="background-color: chartreuse;">課程組</button>
+            <button onclick="filterData('師培中心')" style="background-color: dodgerblue;">師培中心</button>
+            <button onclick="filterData('行政組')" style="background-color: goldenrod;">行政組</button>
+            <button onclick="filterData('全部')" style="background-color: lightcoral;">全部</button>
+            <button onclick="reload_page()" style="background-color: navajowhite;">重新整理</button>
+        </div>
+    </div>
+    <figure class="table">
+        <table class="ck-table-resized">
+            <colgroup>
+                <col style="width:15%;">
+                <col style="width:70%;">
+                <col style="width:15%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>分類</th>
+                    <th>標題</th>
+                    <th>日期</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group, title, date, href in data %}
+                <tr class="body-container">
+                    <td class="group-container">
+                        <span class="group" data-content="{{ group }}">{{ group }}</span>
+                        {% if "教師甄選" in title or "教師甄試" in title or "教師甄聘" in title or "教甄" in title or "增聘教師" in title %}
+                            <span class="group" data-content="教甄">教甄</span>
+                        {% endif %}
+                    </td>
+                    <td class="title"><a href="{{ href }}">{{ title }}</a></td>
+                    <td class="dates">{{ date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </figure>
+
+    
+    <script>
+        function filterData(group) {
+            var trs = document.getElementsByClassName('body-container');
+            var rows = document.getElementsByClassName('group-container');
+            for (var i = 0; i < rows.length; i++) {
+                var test = 0;
+                var row = rows[i].getElementsByTagName("span");
+                for (var j = 0; j < row.length; j++){
+                    var group_index = row[j].getAttribute("data-content")
+                    if (group === group_index){
+                        test++
+                    }
+                }
+                if (group === "全部"){
+                    trs[i].style.display = "table-row";
+                } else if (test > 0){
+                    trs[i].style.display = "table-row";
+                } else{
+                    trs[i].style.display = "none";
+                }
+            }
+        }
+
+        function reload_page() {
+            location.reload();
+        }
+    </script>
+
+    
+</body>
+</html>
